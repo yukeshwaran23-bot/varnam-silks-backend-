@@ -6,6 +6,7 @@ const router = express.Router();
 
 // CREATE NEW ORDER
 router.post("/", customerMiddleware, async (req, res) => {
+    try {
         const order = new Order({
     ...req.body,
 
