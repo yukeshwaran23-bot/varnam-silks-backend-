@@ -62,6 +62,40 @@ router.get("/", async (req, res) => {
 
 
 // GET ONE ORDER
+// GET LOGGED-IN CUSTOMER ORDERS
+
+router.get(
+    "/my-orders",
+    customerMiddleware,
+    async (req, res) => {
+
+        try {
+
+            const orders =
+    await Order.find({
+        customerId: req.customer.userId
+    }).sort({
+        createdAt: -1
+    });
+
+            res.json(orders);
+
+        } catch (error) {
+
+            console.log(
+                "Customer orders failed:",
+                error.message
+            );
+
+            res.status(500).json({
+                message:
+                    "Failed to load customer orders"
+            });
+
+        }
+
+    }
+);
 router.get("/:orderId", async (req, res) => {
     try {
 
@@ -139,38 +173,4 @@ router.patch("/:orderId/status", async (req, res) => {
     }
 
 });
-// GET LOGGED-IN CUSTOMER ORDERS
-
-router.get(
-    "/my-orders",
-    customerMiddleware,
-    async (req, res) => {
-
-        try {
-
-            const orders =
-    await Order.find({
-        customerId: req.customer.userId
-    }).sort({
-        createdAt: -1
-    });
-
-            res.json(orders);
-
-        } catch (error) {
-
-            console.log(
-                "Customer orders failed:",
-                error.message
-            );
-
-            res.status(500).json({
-                message:
-                    "Failed to load customer orders"
-            });
-
-        }
-
-    }
-);
 module.exports = router;
