@@ -428,4 +428,183 @@ router.get(
 
     }
 );
+/* =====================================================
+   CUSTOMER CART
+   LOGIN REQUIRED
+   ===================================================== */
+
+/* =========================
+   GET CART
+   ========================= */
+
+router.get(
+    "/cart",
+    verifyCustomerToken,
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await User.findById(
+                    req.customer.userId
+                );
+
+            if (!user) {
+
+                return res.status(404).json({
+                    message: "Customer not found"
+                });
+
+            }
+
+            res.json({
+                cart: user.cart || []
+            });
+
+        } catch (error) {
+
+            console.log(
+                "Get cart failed:",
+                error.message
+            );
+
+            res.status(500).json({
+                message: "Failed to get cart"
+            });
+
+        }
+
+    }
+);
+
+
+/* =========================
+   SAVE / UPDATE CART
+   ========================= */
+
+router.put(
+    "/cart",
+    verifyCustomerToken,
+    async (req, res) => {
+
+        try {
+
+            const { cart } = req.body;
+
+            if (!Array.isArray(cart)) {
+
+                return res.status(400).json({
+                    message: "Cart must be an array"
+                });
+
+            }
+
+            const cleanedCart =
+                cart
+                    .map(item => ({
+                        productId:
+                            Number(item.productId),
+
+                        quantity:
+                            Number(item.quantity)
+                    }))
+                    .filter(item =>
+                        Number.isFinite(item.productId) &&
+                        Number.isFinite(item.quantity) &&
+                        item.productId > 0 &&
+                        item.quantity > 0
+                    );
+
+            const user =
+                await User.findByIdAndUpdate(
+                    req.customer.userId,
+                    {
+                        cart: cleanedCart
+                    },
+                    {
+                        new: true
+                    }
+                );
+
+            if (!user) {
+
+                return res.status(404).json({
+                    message: "Customer not found"
+                });
+
+            }
+
+            res.json({
+                message: "Cart saved successfully",
+                cart: user.cart
+            });
+
+        } catch (error) {
+
+            console.log(
+                "Save cart failed:",
+                error.message
+            );
+
+            res.status(500).json({
+                message: "Failed to save cart"
+            });
+
+        }
+
+    }
+);
+
+
+/* =========================
+   CLEAR CART
+   ========================= */
+
+router.delete(
+    "/cart",
+    verifyCustomerToken,
+    async (req, res) => {
+
+        try {
+
+            const user =
+                await User.findByIdAndUpdate(
+                    req.customer.userId,
+                    {
+                        cart: []
+                    },
+                    {
+                        new: true
+                    }
+                );
+
+            if (!user) {
+
+                return res.status(404).json({
+                    message: "Customer not found"
+                });
+
+            }
+
+            res.json({
+                message: "Cart cleared successfully",
+                cart: []
+            });
+
+        } catch (error) {
+
+            console.log(
+                "Clear cart failed:",
+                error.message
+            );
+
+            res.status(500).json({
+                message: "Failed to clear cart"
+            });
+
+        }
+
+    }
+);
+
 module.exports = router;
