@@ -7,6 +7,11 @@ const orderSchema = new mongoose.Schema(
             required: true,
             unique: true
         },
+       
+      customerId: {
+    type: String,
+    required: true
+},
 
         customer: {
             name: {

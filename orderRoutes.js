@@ -5,10 +5,11 @@ const customerMiddleware =
 const router = express.Router();
 
 // CREATE NEW ORDER
-router.post("/", async (req, res) => {
-    try {
+router.post("/", customerMiddleware, async (req, res) => {
         const order = new Order({
     ...req.body,
+
+    customerId: req.customer.userId,
 
     items: (req.body.items || []).map(item => ({
         productId: Number(item.productId || item.id),
@@ -147,12 +148,11 @@ router.get(
         try {
 
             const orders =
-                await Order.find({
-                    "customer.phone":
-                        req.customer.phone
-                }).sort({
-                    createdAt: -1
-                });
+    await Order.find({
+        customerId: req.customer.userId
+    }).sort({
+        createdAt: -1
+    });
 
             res.json(orders);
 
